@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import Card from '../components/Card'
 import { formatRupiah } from '../utils/format'
 
 import {
@@ -13,8 +14,8 @@ import {
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
-    totalPenjualan: 0,
-    totalProfit: 0
+    total: 0,
+    profit: 0
   })
 
   const [chartData, setChartData] = useState([])
@@ -27,35 +28,26 @@ export default function Dashboard() {
     let total = 0
     let profit = 0
 
-    data.forEach(item => {
-      total += item.qty * item.price_sell
-      profit += item.qty * (item.price_sell - item.price_buy)
-    })
-
-    setStats({
-      totalPenjualan: total,
-      totalProfit: profit
-    })
-
-    // 📊 chart sederhana per transaksi
     const grouped = {}
 
     data.forEach(item => {
-      const key = item.created_at?.slice(0, 10) || 'today'
+      total += item.qty * item.price_sell
+      profit += item.qty * (item.price_sell - item.price_buy)
 
-      if (!grouped[key]) {
-        grouped[key] = 0
-      }
+      const date = item.created_at?.slice(0, 10)
 
-      grouped[key] += item.qty * item.price_sell
+      if (!grouped[date]) grouped[date] = 0
+      grouped[date] += item.qty * item.price_sell
     })
 
-    const chart = Object.keys(grouped).map(date => ({
-      date,
-      total: grouped[date]
-    }))
+    setStats({ total, profit })
 
-    setChartData(chart)
+    setChartData(
+      Object.keys(grouped).map(date => ({
+        date,
+        total: grouped[date]
+      }))
+    )
   }
 
   useEffect(() => {
@@ -63,23 +55,27 @@ export default function Dashboard() {
   }, [])
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Dashboard</h1>
+    <div>
+      {/* CARDS */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <Card title="Total Penjualan" value={formatRupiah(stats.total)} />
+        <Card title="Profit" value={formatRupiah(stats.profit)} />
+      </div>
 
-      <p>Total Penjualan: {formatRupiah(stats.totalPenjualan)}</p>
-      <p>Total Profit: {formatRupiah(stats.totalProfit)}</p>
+      {/* CHART */}
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
+        <h3 className="mb-4 font-semibold">Grafik Penjualan</h3>
 
-      <h3>Grafik Penjualan</h3>
-
-      <div style={{ width: '100%', height: 300 }}>
-        <ResponsiveContainer>
-          <BarChart data={chartData}>
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="total" />
-          </BarChart>
-        </ResponsiveContainer>
+        <div style={{ width: '100%', height: 300 }}>
+          <ResponsiveContainer>
+            <BarChart data={chartData}>
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="total" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   )
