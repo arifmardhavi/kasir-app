@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
-body {
-  font-family: sans-serif;
+/* 🔥 WAJIB untuk dark mode class */
+@theme {
+  --default-dark-mode: class;
 }
