@@ -32,6 +32,8 @@ export default function App() {
     } else {
       root.classList.remove('dark')
     }
+
+    console.log(root.className) // 🔥 DEBUG
   }, [dark])
 
   if (!session) return <Login />
