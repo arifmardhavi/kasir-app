@@ -34,7 +34,7 @@ export default function Dashboard() {
       total += item.qty * item.price_sell
       profit += item.qty * (item.price_sell - item.price_buy)
 
-      const date = item.created_at?.slice(0, 10)
+      const date = new Date().toISOString().slice(0, 10)
 
       if (!grouped[date]) grouped[date] = 0
       grouped[date] += item.qty * item.price_sell
@@ -74,7 +74,7 @@ export default function Dashboard() {
             <BarChart data={chartData}>
               <XAxis dataKey="date" />
               <YAxis />
-              <Tooltip />
+              <Tooltip formatter={(value) => `Rp ${value}`} />
               <Bar dataKey="total" />
             </BarChart>
           </ResponsiveContainer>
