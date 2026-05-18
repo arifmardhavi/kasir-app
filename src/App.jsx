@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
 
@@ -20,12 +20,36 @@ export default function App() {
     })
   }, [])
 
+  // 🔒 kalau belum login → tampil login
   if (!session) {
     return <Login />
   }
 
+  // ✅ kalau sudah login → tampil app + navbar
   return (
     <BrowserRouter>
+      <nav style={{
+        display: 'flex',
+        gap: '20px',
+        padding: '10px',
+        background: '#222',
+        color: '#fff'
+      }}>
+        <Link to="/" style={{ color: 'white' }}>Dashboard</Link>
+        <Link to="/products" style={{ color: 'white' }}>Products</Link>
+        <Link to="/kasir" style={{ color: 'white' }}>Kasir</Link>
+
+        <button
+          onClick={async () => {
+            await supabase.auth.signOut()
+            window.location.reload()
+          }}
+          style={{ marginLeft: 'auto' }}
+        >
+          Logout
+        </button>
+      </nav>
+
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/products" element={<Products />} />
