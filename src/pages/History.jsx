@@ -2,44 +2,43 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 export default function History() {
-  const [data, setData] = useState([])
-
-  const getData = async () => {
-    const { data } = await supabase
-      .from('transactions')
-      .select(`
-        id,
-        created_at,
-        transaction_items (
-          qty,
-          price_sell,
-          products (name)
-        )
-      `)
-      .order('created_at', { ascending: false })
-
-    setData(data)
-  }
+  const [transactions, setTransactions] = useState([])
 
   useEffect(() => {
     getData()
   }, [])
 
+  const getData = async () => {
+    const { data } = await supabase
+      .from('transactions')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    setTransactions(data || [])
+  }
+
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Riwayat Transaksi</h2>
+    <div>
+      <h2 className="text-xl font-bold mb-4">History Transaksi</h2>
 
-      {data.map(trx => (
-        <div key={trx.id} style={{ border: '1px solid #ccc', marginBottom: 10, padding: 10 }}>
-          <b>{new Date(trx.created_at).toLocaleString()}</b>
-
-          {trx.transaction_items.map((item, i) => (
-            <div key={i}>
-              {item.products.name} - {item.qty} pcs
-            </div>
+      <table className="w-full bg-white dark:bg-gray-800 rounded">
+        <thead>
+          <tr className="text-left border-b">
+            <th className="p-2">Tanggal</th>
+            <th className="p-2">ID</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map(t => (
+            <tr key={t.id} className="border-b">
+              <td className="p-2">
+                {new Date(t.created_at).toLocaleString()}
+              </td>
+              <td className="p-2">{t.id}</td>
+            </tr>
           ))}
-        </div>
-      ))}
+        </tbody>
+      </table>
     </div>
   )
 }

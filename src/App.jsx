@@ -23,17 +23,9 @@ export default function App() {
     })
   }, [])
 
-  // 🔥 DARK MODE FIX (langsung ke HTML)
   useEffect(() => {
     const root = document.documentElement
-
-    if (dark) {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-
-    console.log(root.className) // 🔥 DEBUG
+    dark ? root.classList.add('dark') : root.classList.remove('dark')
   }, [dark])
 
   if (!session) return <Login />

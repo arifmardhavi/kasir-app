@@ -7,9 +7,12 @@ export default function MainLayout({ children, dark, setDark }) {
 
       <Sidebar />
 
-      <div className="flex-1 p-6 overflow-y-auto relative">
+      <div className="flex-1 flex flex-col">
         <Header dark={dark} setDark={setDark} />
-        {children}
+
+        <div className="flex-1 p-6 overflow-y-auto">
+          {children}
+        </div>
       </div>
 
     </div>

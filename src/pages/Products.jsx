@@ -3,48 +3,38 @@ import { supabase } from '../lib/supabase'
 
 export default function Products() {
   const [products, setProducts] = useState([])
-  const [name, setName] = useState('')
-  const [buy, setBuy] = useState('')
-  const [sell, setSell] = useState('')
-  const [stock, setStock] = useState('')
 
-  const getProducts = async () => {
+  const getData = async () => {
     const { data } = await supabase.from('products').select('*')
-    setProducts(data)
-  }
-
-  const addProduct = async () => {
-    await supabase.from('products').insert({
-      name,
-      price_buy: buy,
-      price_sell: sell,
-      stock
-    })
-    getProducts()
+    setProducts(data || [])
   }
 
   useEffect(() => {
-    getProducts()
+    getData()
   }, [])
 
   return (
     <div>
-      <h2>Products</h2>
+      <h2 className="text-xl font-bold mb-4">Produk</h2>
 
-      <input placeholder="Name" onChange={e => setName(e.target.value)} />
-      <input placeholder="Buy" onChange={e => setBuy(e.target.value)} />
-      <input placeholder="Sell" onChange={e => setSell(e.target.value)} />
-      <input placeholder="Stock" onChange={e => setStock(e.target.value)} />
-
-      <button onClick={addProduct}>Add</button>
-
-      <ul>
-        {products.map(p => (
-          <li key={p.id}>
-            {p.name} - {p.stock}
-          </li>
-        ))}
-      </ul>
+      <table className="w-full bg-white dark:bg-gray-800 rounded">
+        <thead>
+          <tr className="text-left border-b">
+            <th className="p-2">Nama</th>
+            <th className="p-2">Stock</th>
+            <th className="p-2">Harga Jual</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.map(p => (
+            <tr key={p.id} className="border-b">
+              <td className="p-2">{p.name}</td>
+              <td className="p-2">{p.stock}</td>
+              <td className="p-2">{p.price_sell}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
