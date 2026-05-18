@@ -64,7 +64,7 @@ export default function Dashboard() {
 
       {/* CHART */}
       <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
-        <h3 className="mb-4 font-semibold">Grafik Penjualan</h3>
+        <h3 className="mb-4 font-semibold text-red-500">Grafik Penjualan</h3>
 
         <div style={{ width: '100%', height: 300 }}>
           <ResponsiveContainer>
