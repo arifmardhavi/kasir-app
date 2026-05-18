@@ -2,23 +2,45 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 export default function Dashboard() {
-  const [totalSales, setTotalSales] = useState(0)
+  const [stats, setStats] = useState({
+    totalProduk: 0,
+    totalStock: 0,
+    totalTerjual: 0,
+    totalPenjualan: 0,
+    totalProfit: 0
+  })
 
   const getData = async () => {
-    const { data } = await supabase
+    // ambil products
+    const { data: products } = await supabase
+      .from('products')
+      .select('*')
+
+    // ambil transaksi
+    const { data: items } = await supabase
       .from('transaction_items')
-      .select('qty, price_sell, price_buy')
+      .select('*')
 
-    let total = 0
-    let profit = 0
+    let totalStock = 0
+    products.forEach(p => totalStock += p.stock)
 
-    data.forEach(item => {
-      total += item.qty * item.price_sell
-      profit += item.qty * (item.price_sell - item.price_buy)
+    let totalTerjual = 0
+    let totalPenjualan = 0
+    let totalProfit = 0
+
+    items.forEach(item => {
+      totalTerjual += item.qty
+      totalPenjualan += item.qty * item.price_sell
+      totalProfit += item.qty * (item.price_sell - item.price_buy)
     })
 
-    setTotalSales(total)
-    console.log('Profit:', profit)
+    setStats({
+      totalProduk: products.length,
+      totalStock,
+      totalTerjual,
+      totalPenjualan,
+      totalProfit
+    })
   }
 
   useEffect(() => {
@@ -26,9 +48,14 @@ export default function Dashboard() {
   }, [])
 
   return (
-    <div>
-      <h2>Dashboard</h2>
-      <p>Total Penjualan: {totalSales}</p>
+    <div style={{ padding: 20 }}>
+      <h1>Dashboard</h1>
+
+      <p>Total Produk: {stats.totalProduk}</p>
+      <p>Total Stock: {stats.totalStock}</p>
+      <p>Total Terjual: {stats.totalTerjual}</p>
+      <p>Total Penjualan: {stats.totalPenjualan}</p>
+      <p>Total Profit: {stats.totalProfit}</p>
     </div>
   )
 }
