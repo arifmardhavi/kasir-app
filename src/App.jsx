@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Products from './pages/Products'
 import Kasir from './pages/Kasir'
+import History from './pages/History'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -38,7 +39,7 @@ export default function App() {
         <Link to="/" style={{ color: 'white' }}>Dashboard</Link>
         <Link to="/products" style={{ color: 'white' }}>Products</Link>
         <Link to="/kasir" style={{ color: 'white' }}>Kasir</Link>
-
+        <Link to="/history" style={{ color: 'white' }}>History</Link>
         <button
           onClick={async () => {
             await supabase.auth.signOut()
@@ -54,6 +55,7 @@ export default function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/products" element={<Products />} />
         <Route path="/kasir" element={<Kasir />} />
+        <Route path="/history" element={<History />} />
       </Routes>
     </BrowserRouter>
   )

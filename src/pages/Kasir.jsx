@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { formatRupiah } from '../utils/format'
 
 export default function Kasir() {
   const [products, setProducts] = useState([])
   const [cart, setCart] = useState([])
+  const [search, setSearch] = useState('')
 
-  // ambil produk
   const getProducts = async () => {
     const { data } = await supabase.from('products').select('*')
     setProducts(data)
@@ -15,8 +16,15 @@ export default function Kasir() {
     getProducts()
   }, [])
 
+  // 🔍 filter search
+  const filteredProducts = products.filter(p =>
+    p.name.toLowerCase().includes(search.toLowerCase())
+  )
+
   // tambah ke cart
   const addToCart = (product) => {
+    if (product.stock <= 0) return // 🚫 disable kalau stock habis
+
     const exist = cart.find(item => item.id === product.id)
 
     if (exist) {
@@ -30,7 +38,6 @@ export default function Kasir() {
     }
   }
 
-  // update qty
   const updateQty = (id, change) => {
     setCart(cart.map(item =>
       item.id === id
@@ -39,31 +46,19 @@ export default function Kasir() {
     ))
   }
 
-  // hitung total
   const total = cart.reduce((acc, item) => {
     return acc + item.qty * item.price_sell
   }, 0)
 
-  // simpan transaksi
   const handleSave = async () => {
-    if (cart.length === 0) {
-      alert('Keranjang kosong')
-      return
-    }
+    if (cart.length === 0) return alert('Keranjang kosong')
 
-    // 1. insert transaksi
-    const { data: trx, error: trxError } = await supabase
+    const { data: trx } = await supabase
       .from('transactions')
       .insert({})
       .select()
       .single()
 
-    if (trxError) {
-      alert('Gagal simpan transaksi')
-      return
-    }
-
-    // 2. insert items
     const items = cart.map(item => ({
       transaction_id: trx.id,
       product_id: item.id,
@@ -72,16 +67,9 @@ export default function Kasir() {
       price_sell: item.price_sell
     }))
 
-    const { error: itemError } = await supabase
-      .from('transaction_items')
-      .insert(items)
+    await supabase.from('transaction_items').insert(items)
 
-    if (itemError) {
-      alert('Gagal simpan item transaksi')
-      return
-    }
-
-    // 🔥 3. update stock (AMAN)
+    // update stock
     for (const item of cart) {
       const { data: product } = await supabase
         .from('products')
@@ -98,37 +86,44 @@ export default function Kasir() {
     }
 
     alert('Transaksi berhasil')
-
-    // reset cart
     setCart([])
     getProducts()
   }
 
   return (
     <div style={{ display: 'flex', padding: 20, gap: 20 }}>
-      
+
       {/* PRODUK */}
       <div style={{ flex: 2 }}>
         <h2>Produk</h2>
+
+        {/* 🔍 SEARCH */}
+        <input
+          placeholder="Cari produk..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ marginBottom: 10, padding: 5, width: '100%' }}
+        />
 
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: 10
         }}>
-          {products.map(p => (
+          {filteredProducts.map(p => (
             <div
               key={p.id}
               onClick={() => addToCart(p)}
               style={{
                 border: '1px solid #ccc',
                 padding: 10,
-                cursor: 'pointer',
+                cursor: p.stock > 0 ? 'pointer' : 'not-allowed',
+                opacity: p.stock > 0 ? 1 : 0.5,
                 borderRadius: 8
               }}
             >
               <h4>{p.name}</h4>
-              <p>Rp {p.price_sell}</p>
+              <p>{formatRupiah(p.price_sell)}</p>
               <small>Stock: {p.stock}</small>
             </div>
           ))}
@@ -142,7 +137,7 @@ export default function Kasir() {
         {cart.length === 0 && <p>Belum ada item</p>}
 
         {cart.map(item => (
-          <div key={item.id} style={{ marginBottom: 10 }}>
+          <div key={item.id}>
             <b>{item.name}</b>
             <br />
 
@@ -150,25 +145,15 @@ export default function Kasir() {
             <span style={{ margin: '0 10px' }}>{item.qty}</span>
             <button onClick={() => updateQty(item.id, 1)}>+</button>
 
-            <p>Rp {item.qty * item.price_sell}</p>
+            <p>{formatRupiah(item.qty * item.price_sell)}</p>
           </div>
         ))}
 
         <hr />
 
-        <h3>Total: Rp {total}</h3>
+        <h3>Total: {formatRupiah(total)}</h3>
 
-        <button
-          onClick={handleSave}
-          disabled={cart.length === 0}
-          style={{
-            padding: 10,
-            width: '100%',
-            background: 'green',
-            color: 'white',
-            border: 'none'
-          }}
-        >
+        <button onClick={handleSave} disabled={cart.length === 0}>
           Simpan Transaksi
         </button>
       </div>
